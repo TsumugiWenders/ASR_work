@@ -101,14 +101,14 @@ def fbank(spectrum, num_filter=num_filter):
     # # step3: 计算音频帧的能量谱
     # pow_frames = ((1.0 / fft_len) * (spectrum ** 2))
     # step3: 计算mel滤波器组
-    bin = (fft_points / (fs / 2)) * (fft_len / 2)
+    bin = (fft_points / (fs / 2)) * (fft_len / 2) #各个mel滤波器中心点对应FFT的区域编码，找到有值的位置
     for i in range(1, num_filter + 1):
         left = int(bin[i - 1])
         center = int(bin[i])
         right = int(bin[i + 1])
         for j in range(left, center):
             feats[j + 1, i - 1] = (j + 1 - bin[i - 1]) / (bin[i] - bin[i - 1])
-        for k in range(center, right):
+        for j in range(center, right):
             feats[j + 1, i - 1] = (bin[i + 1] - (j + 1)) / (bin[i + 1] - bin[i])
     # step4: 计算fbank值并取log
     feats = np.dot(spectrum, feats)
