@@ -140,12 +140,9 @@ targets = ['Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'O']
 
 def main():
     gmms = {}
-    # 1.为每一个字符创建一个GMM模型，保存在gmms字典中
     for target in targets:
         gmms[target] = GMM(39, K=num_gaussian) #39维mfcc特征
-    # 2.在训练集上训练gmms中的混合高斯模型
     gmms = train(gmms)
-    # 3.在测试集上测试模型
     acc = test(gmms)
     print('Recognition accuracy: %f' % acc)
     fid = open('acc.txt', 'w')
