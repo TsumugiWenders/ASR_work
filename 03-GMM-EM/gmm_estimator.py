@@ -43,7 +43,7 @@ class GMM:
         """
         D=x.shape[0]
         det_sigma = np.linalg.det(sigma)
-        inv_sigma = np.linalg.inv(sigma + 0.0001)
+        inv_sigma = np.linalg.inv(sigma)
         mahalanobis = np.dot(np.transpose(x-mu), inv_sigma)
         mahalanobis = np.dot(mahalanobis, (x-mu))
         const = 1/((2*np.pi)**(D/2))
@@ -77,6 +77,7 @@ class GMM:
             FINISH by YOUSELF
         """
         N = X.shape[0]
+        print(N)
         samgauss = [np.zeros(self.K) for i in range(N)]  # 构造样本和高斯函数的列表[N,(K,)]
 
         # E-step：计算后验概率
@@ -108,7 +109,7 @@ def train(gmms, num_iterations = num_iterations):
     
     for target in targets:
         feats = get_feats(target, dict_utt2feat, dict_target2utt)
-        for i in range(num_iterations): #训练迭代次数：5
+        for i in range(num_iterations): #训练迭代次数 5
             log_llh = gmms[target].em_estimator(feats)
     return gmms
 
