@@ -4,13 +4,13 @@ import numpy as np
 from utils import *
 import scipy.cluster.vq as vq
 
-num_gaussian = 5
+num_gaussians = [3,4,5,6,7]
 num_iterations = 5
 
 
 class GMM:
     # 1.GMM的初始化方法
-    def __init__(self, D, K=5):
+    def __init__(self, D, K):
         assert(D>0)
         self.dim = D #MFCC 39维数据特征
         self.K = K #要形成的簇数以及要生成的质心数,即num_gaussian
@@ -77,7 +77,7 @@ class GMM:
             FINISH by YOUSELF
         """
         N = X.shape[0]
-        print(N)
+        # print(N)
         samgauss = [np.zeros(self.K) for i in range(N)]  # 构造样本和高斯函数的列表[N,(K,)]
 
         # E-step：计算后验概率
@@ -139,15 +139,16 @@ def test(gmms):
 targets = ['Z', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'O']
 
 def main():
-    gmms = {}
-    for target in targets:
-        gmms[target] = GMM(39, K=num_gaussian) #39维mfcc特征
-    gmms = train(gmms)
-    acc = test(gmms)
-    print('Recognition accuracy: %f' % acc)
-    fid = open('acc.txt', 'w')
-    fid.write(str(acc))
-    fid.close()
+    for num_gaussian in num_gaussians:
+        gmms = {}
+        for target in targets:
+            gmms[target] = GMM(39, K=num_gaussian) #39维mfcc特征
+        gmms = train(gmms)
+        acc = test(gmms)
+        print('Recognition accuracy: %f\n' % acc)
+        fid = open('acc.txt', 'a')
+        fid.write(str(acc)+'\n')
+        fid.close()
 
 
 if __name__ == '__main__':
