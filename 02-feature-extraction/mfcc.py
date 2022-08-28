@@ -17,9 +17,9 @@ def plot_spectrogram(spec, note, file_name):
         :param file_name: name of the file
     """
     fig = plt.figure(figsize=(20, 5))
-    heatmap = plt.pcolor(spec)
+    heatmap = plt.pcolor(spec.T)
     fig.colorbar(mappable=heatmap)
-    plt.xlabel('Time(s)')
+    plt.xlabel('frame')
     plt.ylabel(note)
     plt.tight_layout()
     plt.savefig(file_name)
