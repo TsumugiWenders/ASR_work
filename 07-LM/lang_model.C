@@ -91,6 +91,23 @@ void LangModel::count_sentence_ngrams(const vector<int>& wordList) {
   //
   //      Your code should work for any value of m_n (larger than zero).
 
+  int wordCnt = wordList.size();
+  assert(m_n > 0);
+  for (int wordIdx = m_n -1; wordIdx < wordCnt; ++wordIdx) {
+    // 从ngram到1gram回退
+    for (int n = 1; n <= m_n; ++n) {
+        vector<int> ngram(wordList.begin() + wordIdx - (m_n -n),
+        wordList.begin() + wordIdx + 1);
+        int count = m_predCounts.incr_count(ngram);
+
+        vector<int> histNgram(ngram.begin(), ngram.end() - 1);
+        m_histCounts.incr_count(histNgram);
+        if (count == 1){
+            m_histOnePlusCounts.incr_count(histNgram);
+        }
+    }
+  }
+
 }
 
 double LangModel::get_prob_witten_bell(const vector<int>& ngram) const {
@@ -124,6 +141,28 @@ double LangModel::get_prob_witten_bell(const vector<int>& ngram) const {
   //      "retProb" should be set to the smoothed n-gram probability
   //          of the last word in the n-gram given the previous words.
   //
+
+  vector<int> histNgram(ngram.begin(), ngram.end() - 1);
+  int predCnt = m_predCounts.get_count(ngram);
+  int histCnt = m_histCounts.get_count(histNgram);
+  int histOnePlusCnt = m_histOnePlusCounts.get_count(histNgram);
+
+  double lambda = 0.0, PMle = 0.0, beta = 1.0, PBackoff;
+  if (histCnt > 0) {
+    lambda = 1.0 * histCnt / (histCnt + histOnePlusCnt);
+    PMle = 1.0 * predCnt / histCnt;
+    beta = 1.0 * histOnePlusCnt / (histCnt + histOnePlusCnt);
+  }
+  if (ngram.size() == 1) {
+    PBackoff = 1.0 / vocSize;
+  }
+  else {
+    PBackoff = get_prob_witten_bell(vector<int>(ngram.begin() + 1, ngram.end()));
+
+  }
+  retProb = lambda * PMle + beta * PBackoff;
+
+
   return retProb;
 }
 

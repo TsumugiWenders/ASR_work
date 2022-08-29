@@ -115,7 +115,60 @@ double viterbi(const Graph& graph, const matrix<double>& gmmProbs,
   // return 0.0;
 
   //  END_LAB
-  //
+  // 初始化chart
+  {
+    for (size_t frmIdx=0; frmIdx<chart.size1(); ++frmIdx)
+    {
+      for (size_t stateIdx=0; stateIdx<chart.size2(); ++stateIdx)
+      {
+        chart(frmIdx, stateIdx).assign(g_zeroLogProb, -1);
+      }
+    }
+    int startState = graph.get_start_state();
+    chart(0, startState).assign(0, -1);
+  }
+
+  // 初始化参数
+  auto startState = graph.get_start_state();
+  int frmIdx = 1;
+  int arcCnt = graph.get_arc_count(startState);
+  int arcId = graph.get_first_arc_id(startState);
+
+  for (int arcIdx=0; arcIdx<arcCnt; ++arcIdx)
+  {
+    Arc arc;
+    int curArcId = arcId;
+    arcId = graph.get_arc(arcId, arc);
+    int dstState = arc.get_dst_state();
+    double trans_prob = arc.get_log_prob();
+    double log_prob = trans_prob + gmmProbs(frmIdx-1, arc.get_gmm());
+    log_prob += chart(frmIdx-1, startState).get_log_prob();
+    chart(frmIdx, dstState).assign(log_prob, curArcId);
+  }
+
+  // 递推
+  for (int frmIdx=2; frmIdx<=frmCnt; ++frmIdx)
+  {
+    for (int stateIdx=0; stateIdx<stateCnt; ++stateIdx)
+    {
+      int arcCnt = graph.get_arc_count(stateIdx);
+      int arcId = graph.get_first_arc_id(stateIdx);
+      for (int arcIdx=0; arcIdx<arcCnt; ++arcIdx)
+      {
+        Arc arc;
+        int curArcId = arcId;
+        arcId = graph.get_arc(arcId, arc);
+        int dstState = arc.get_dst_state();
+        double trans_prob = arc.get_log_prob();
+        double log_prob = chart(frmIdx-1, stateIdx).get_log_prob() +
+            trans_prob + gmmProbs(frmIdx-1, arc.get_gmm());
+        if (log_prob>chart(frmIdx, dstState).get_log_prob())
+        {
+          chart(frmIdx, dstState).assign(log_prob, curArcId);
+        }
+      }
+    }
+  }
 
   //  The code for calculating the final probability and
   //  the best path is provided for you.

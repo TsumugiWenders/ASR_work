@@ -80,7 +80,38 @@ double forward_backward(const Graph& graph, const matrix<double>& gmmProbs,
   //   cout << endl;
   // }
   //  END_LAB
-  //
+
+  // 初始化chart
+  {
+    for (int frmIdx = 0; frmIdx < (int)chart.size1(); ++frmIdx) {
+      for (int stateIdx = 0; stateIdx < (int)chart.size2(); ++stateIdx) {
+        chart(frmIdx, stateIdx).set_forw_log_prob(g_zeroLogProb);
+        chart(frmIdx, stateIdx).set_back_log_prob(g_zeroLogProb);
+      }
+    }
+  }
+  int startState = graph.get_start_state();
+  chart(0, startState).set_forw_log_prob(0);
+
+  // 前向递推
+  for (int frmIdx = 1; frmIdx <= frmCnt; ++frmIdx) {
+    for (int stateIdx = 0; stateIdx < stateCnt; ++stateIdx) {
+      int arcCnt = graph.get_arc_count(stateIdx);
+      int arcId = graph.get_first_arc_id(stateIdx);
+      for (int arcIdx = 0; arcIdx < arcCnt; ++arcIdx) {
+        Arc arc;
+        arcId = graph.get_arc(arcId, arc);
+        int dstState = arc.get_dst_state();
+        double logProb = arc.get_log_prob() +
+                         chart(frmIdx - 1, stateIdx).get_forw_log_prob() +
+                         gmmProbs(frmIdx - 1, arc.get_gmm());
+        logProb = add_log_probs(vector<double>{
+            logProb, chart(frmIdx, dstState).get_forw_log_prob()});
+        chart(frmIdx, dstState).set_forw_log_prob(logProb);
+      }
+    }
+  }
+
 
   //  This function computes the total forward prob of the entire utterence,
   //  i.e., the sum of the probabilities of all complete paths through
@@ -153,6 +184,25 @@ double forward_backward(const Graph& graph, const matrix<double>& gmmProbs,
   
   // Record posterior prob
   //  END_LAB
+  // 后向递推
+  for (int frmIdx = frmCnt; frmIdx > 0; --frmIdx) {
+    for (int stateIdx = 0; stateIdx < stateCnt; ++stateIdx) {
+      int arcCnt = graph.get_arc_count(stateIdx);
+      int arcId = graph.get_first_arc_id(stateIdx);
+      for (int arcIdx = 0; arcIdx < arcCnt; ++arcIdx) {
+        Arc arc;
+        arcId = graph.get_arc(arcId, arc);
+        int dstState = arc.get_dst_state();
+        double logProb =
+            chart(frmIdx - 1, stateIdx).get_forw_log_prob() +
+            arc.get_log_prob() +
+            gmmProbs(frmIdx - 1, arc.get_gmm()) +
+            chart(frmIdx, dstState).get_back_log_prob();
+        gmmCountList.push_back(
+            GmmCount(arc.get_gmm(), frmIdx - 1, exp(logProb - uttLogProb)));
+      }
+    }
+  }
 
   return uttLogProb;
 }
