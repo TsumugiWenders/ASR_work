@@ -5,7 +5,7 @@
 #   Due: February 26, 2016 at 6pm
 ########################################################################
 
-* Name:
+* Name:soho968
 
 
 ########################################################################
@@ -18,7 +18,9 @@
   they express the same set of models?  Can you think of any
   advantage one representation might have over the other?
 
-->
+-> 节点形式中，在前向算法中，每一个单元内的数字表示前向概率，算法过程是直接计算。在Viterbi算法中，每个单元格内的数字表示最佳概率，通向每个单元格的最佳路径用实线表示。arcs上的表示一种状态到另一种状态的概率。
+这两种表示是等价的，可以互相转换。
+第二钟方式更好，将HMM输出放在arcs上，处理时能够看到所有数据。
 
 
 * When doing isolated word recognition, one method is to compute the
@@ -29,7 +31,7 @@
   Are these methods equivalent (in terms of the answer selected)?
   Why or why not?
 
-->
+->是等价的。Viterbi算法能够在回溯时收集所有的单词，但是，当移动到word序列时，一个大的图不能对每个序列都有HMM，因为它在这个过程中会删除，并且只能在每一帧填入k个最好的单元格。回溯是相同的，但是图是不同的
 
 
 * To do the dynamic programming computation correctly, one must
@@ -53,7 +55,7 @@
   If there are skip arcs, under what conditions is the good ordering
   still valid?
 
-->
+->第一个排序总是会产生正确的结果。frame是按顺序来的，一帧一帧地进行动态规划能确保在填充一个单元格时，该单元格所依赖的所有单元格都已被填充。第二种方法初始化了第一行，遍历再填充一个单元格，第一列也都将保持为g_zeroLogProb。如果有skip arcs，要保证有其他弧可以到达这个单元格，得到正确的结果。
 
 
 * Create the file "p1b.out" by running:
@@ -91,13 +93,13 @@
   Explain how to compute the posterior count of each component Gaussian
   given the posterior count of the entire GMM.
 
-->
+->后验概率是联合概率分布除以边缘概率分布，所以它是先验与似然的乘积。因此，如果知道了前一次迭代的先验和均值和方差，可以通过将先验和这个高斯分布的概率密度函数相乘来计算，用这个乘积除以整个GMM的后验计数，结果就是这个高斯分量的后验计数。
 
 
 * Given the total posterior counts of each Gaussian in a GMM, explain
   how to reestimate the mixture weights of each Gaussian in that GMM.
 
-->
+->将每个数据点的后验计数相加，然后除以该模型中所有数据点的总数，得到该GMM中每个高斯分布的混合权重。
 
 
 ########################################################################
@@ -117,27 +119,27 @@
 
 * What word-error rates did you find by running "lab2_p4a.sh"?
 
-->
+->0.04
 
 
 * What word-error rates did you find by running "lab2_p4b.sh"?
 
-->
+->0.21
 
 
 * What word-error rates did you find by running "lab2_p4c.sh"?
 
-->
+->0.32
 
 
 * What did you learn in this part?
 
-->
+->解码连在一起的数字串数据的错误率要高于孤立数字的错误率，容易受到前后数字的影响。part4 a和part4 c对比表示，当在大HMM中加入训练好的转移概率时，错误率会急剧增加，最好忽略转移概率。
 
 
 * If an HMM were a fruit, what type of fruit would it be?
 
-->
+->可能是橙子，判断好吃与否是外在形态。hmm只能通过外部观察找到最可能的隐藏状态和输出路径。
 
 
 ########################################################################
