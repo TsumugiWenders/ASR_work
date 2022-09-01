@@ -1,2 +1,2 @@
-file textword.text.count: 12969 sentences, 40314 words, 23777 OOVs
-10440 zeroprobs, logprob= -33977.87 ppl= 60.5506 ppl1= 374010.2
+file testword.text.count: 12025 sentences, 37441 words, 22213 OOVs
+2577 zeroprobs, logprob= -111258 ppl= 32266.1 ppl1= 6.22859e+08
